@@ -1,0 +1,15 @@
+#!/bin/bash
+if [ "$1" = "" ]; then
+echo "Give realpath of wallpaper dir as first argument"
+exit 1
+fi
+
+if [ "$2" = "" ]; then
+echo "Give realpath of working_dir as second argument"
+exit 1
+fi
+
+wallpaper=$(ls $1 | sort -R | head -n 1)
+xwallpaper --zoom $1"/"$wallpaper
+CURRENT_WALLPAPER=$1"/"$wallpaper
+echo $CURRENT_WALLPAPER > "$2/CURRENT_WALLPAPER"

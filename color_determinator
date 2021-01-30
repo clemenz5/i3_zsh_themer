@@ -1,0 +1,42 @@
+#!/bin/bash
+#$1 = current wallpaper path
+#$2 = i3 config blueprint path
+#$3 = i3 config path
+#$4 = xresources blueprint path
+#$5 = xresources path
+#$6 = working_dir
+output=$(convert $1 -colorspace RGB -format %c histogram:info:- | sort -nr | head -n 100)
+output="${output// /-}"
+colourest_color_value="0"
+colourest_color=
+
+for line in $output
+do
+    #echo $line
+    color=$(echo $line | cut -d"-" -f7)
+    colours=$(echo $line | cut -d"r" -f2 | cut -d"(" -f2)
+    colours="${colours//'%,'/ }"
+    colour_value_sum="0"
+    for partial in $colours
+    do
+        partial=$(echo $partial | cut -d"." -f1)
+        partial="${partial//)/ }"
+        partial="${partial//%/ }"
+        colour_value_sum=$(expr $colour_value_sum + $partial)
+    done
+    if [ $colour_value_sum -gt $colourest_color_value ]; then 
+        colourest_color_value=$colour_value_sum
+        colourest_color=$color 
+    fi
+done
+
+colourest_color=$(echo $colourest_color | cut -c 1-7)
+#echo $colourest_color_value
+i3_config=$(cat $2)
+i3_config="${i3_config//'$accent_color'/$colourest_color}"
+x_resources="$(cat $4)"
+x_resources="${x_resources//'$accent_color'/$colourest_color}"
+echo "$3"
+echo "$i3_config" > $3
+echo "$x_resources" > $5
+echo $colourest_color > "$6/CURRENT_COLOR"
